@@ -7,35 +7,30 @@
 
 import SwiftUI
 
+
 struct ContentView: View {
-    let users = ["Tohru", "Yuki", "Kyo", "Momiji"]
-    @State private var selection = Set<String>()
-    
-    @State private var selectedTab = "One"
     
     var body: some View {
-        List(users, id: \.self, selection: $selection) { user in
-            Text(user)
-        }
-        
-        if selection.isEmpty == false {
-            Text("you selected \(selection.formatted())")
-        }
-        
-        TabView(selection: $selectedTab) {
-            Button("Show tab 2") {
-                selectedTab = "Two"
-            }
-            .tabItem {
-                Label("One", systemImage: "star")
-            }
-            .tag("One")
-            
-            Text("tab 2")
+        TabView {
+            ProspectsView(filter: .none)
                 .tabItem {
-                    Label("Two", systemImage: "circle")
+                    Label("Everyone", systemImage: "person.3")
                 }
-                .tag("Two")
+            
+            ProspectsView(filter: .contacted)
+                .tabItem {
+                    Label("Contact", systemImage: "checkmark.circle")
+                }
+            
+            ProspectsView(filter: .uncontacted)
+                .tabItem {
+                    Label("Uncontacted", systemImage: "questionmark.diamond")
+                }
+            
+            MeView()
+                .tabItem {
+                    Label("Me", systemImage: "person.crop.square")
+                }
         }
     }
 }
