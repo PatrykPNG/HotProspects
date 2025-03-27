@@ -40,12 +40,28 @@ struct ProspectsView: View {
         NavigationStack {
             // dodalem selection zeby dodac funkcje usuwania kilku na raz
             List(prospects, selection: $selectedProspects) { prospect in
-                VStack(alignment: .leading) {
-                    Text(prospect.name)
-                        .font(.headline)
-                    
-                    Text(prospect.emailAddress)
-                        .foregroundStyle(.secondary)
+                NavigationLink {
+                    EditProspectView(prospect: prospect)
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(prospect.name)
+                                .font(.headline)
+                            
+                            Text(prospect.emailAddress)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        if filter == .none {
+                            if prospect.isContacted {
+                                Image(systemName: "person.crop.circle.fill.badge.checkmark")
+                            } else {
+                                Image(systemName: "person.crop.circle.badge.xmark")
+                            }
+                        }
+                    }
                 }
                 .swipeActions {
                     Button("Delete", systemImage: "trash", role: .destructive) {
