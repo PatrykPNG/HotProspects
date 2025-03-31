@@ -18,8 +18,10 @@ struct EditProspectView: View {
             Section("Edit email Address") {
                 TextField("emailAddress", text: $prospect.emailAddress)
             }
+            Toggle("Contacted", isOn: $prospect.isContacted)
         }
         .navigationTitle("Edit")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

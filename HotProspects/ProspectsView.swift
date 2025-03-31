@@ -37,81 +37,81 @@ struct ProspectsView: View {
     }
     
     var body: some View {
-        NavigationStack {
             // dodalem selection zeby dodac funkcje usuwania kilku na raz
-            List(prospects, selection: $selectedProspects) { prospect in
-                NavigationLink {
-                    EditProspectView(prospect: prospect)
-                } label: {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(prospect.name)
-                                .font(.headline)
-                            
-                            Text(prospect.emailAddress)
-                                .foregroundStyle(.secondary)
-                        }
+        List(prospects, selection: $selectedProspects) { prospect in
+            NavigationLink {
+                EditProspectView(prospect: prospect)
+            } label: {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(prospect.name)
+                            .font(.headline)
                         
-                        Spacer()
-                        
-                        if filter == .none {
-                            if prospect.isContacted {
-                                Image(systemName: "person.crop.circle.fill.badge.checkmark")
-                            } else {
-                                Image(systemName: "person.crop.circle.badge.xmark")
-                            }
-                        }
-                    }
-                }
-                .swipeActions {
-                    Button("Delete", systemImage: "trash", role: .destructive) {
-                        modelContext.delete(prospect)
+                        Text(prospect.emailAddress)
+                            .foregroundStyle(.secondary)
                     }
                     
-                    if prospect.isContacted {
-                        Button("Mark Uncontacted", systemImage: "person.crop.circle.badge.xmark") {
-                            prospect.isContacted.toggle()
+                    Spacer()
+                    
+                    if filter == .none {
+                        if prospect.isContacted {
+                            Image(systemName: "person.crop.circle.fill.badge.checkmark")
                         }
-                        .tint(.blue)
-                    } else {
-                        Button("Mark Contacted", systemImage: "person.crop.circle.fill.badge.checkmark") {
-                            prospect.isContacted.toggle()
-                        }
-                        .tint(.green)
-                        
-                        Button("Remind me", systemImage: "bell") {
-                            addNotification(for: prospect)
-                        }
-                        .tint(.orange)
-                    }
-                }
-                // dla usuwania kilku rzeczy na raz, zeby wiadomo bylo ze lista wyswietla te info tylko dla jednego prospectu
-                .tag(prospect)
-            }
-            .navigationTitle(title)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Scan", systemImage: "qrcode.viewfinder") {
-                        isShowingScanner = true
-                    }
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    EditButton()
-                }
-                
-                if selectedProspects.isEmpty == false {
-                    ToolbarItem(placement: .bottomBar) {
-                        Button("Delete Selected", action: delete)
                     }
                 }
             }
-            .sheet(isPresented: $isShowingScanner) {
-                CodeScannerView(codeTypes: [.qr], simulatedData: "Tomek Chada\nTomek@gmail.com", completion: handleScan)
+            .swipeActions {
+                Button("Delete", systemImage: "trash", role: .destructive) {
+                    modelContext.delete(prospect)
+                }
+                
+                if prospect.isContacted {
+                    Button("Mark Uncontacted", systemImage: "person.crop.circle.badge.xmark") {
+                        prospect.isContacted.toggle()
+                    }
+                    .tint(.blue)
+                } else {
+                    Button("Mark Contacted", systemImage: "person.crop.circle.fill.badge.checkmark") {
+                        prospect.isContacted.toggle()
+                    }
+                    .tint(.green)
+                    
+                    Button("Remind me", systemImage: "bell") {
+                        addNotification(for: prospect)
+                    }
+                    .tint(.orange)
+                }
+            }
+            // dla usuwania kilku rzeczy na raz, zeby wiadomo bylo ze lista wyswietla te info tylko dla jednego prospectu
+            .tag(prospect)
+        }
+        .navigationTitle(title)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Scan", systemImage: "qrcode.viewfinder") {
+                    isShowingScanner = true
+                }
+            }
+            
+            ToolbarItem(placement: .topBarLeading) {
+                EditButton()
+            }
+            
+            if selectedProspects.isEmpty == false {
+                ToolbarItem(placement: .bottomBar) {
+                    Button("Delete Selected", action: delete)
+                }
             }
         }
+        .sheet(isPresented: $isShowingScanner) {
+            CodeScannerView(codeTypes: [.qr], simulatedData: "Tomek Chada\nTomek@gmail.com", completion: handleScan)
+        }
+        .onAppear {
+            selectedProspects = []
+        }
     }
-    init(filter: FilterType) {
+    
+    init(filter: FilterType, sort: SortDescriptor<Prospect>) {
         self.filter = filter
         
         if filter != .none {
@@ -122,7 +122,9 @@ struct ProspectsView: View {
                 //jesli true to dla .contacted, jesli false to .uncontacted
                 //$0 w tym przypadku zanczy Prospect
                 $0.isContacted == showContactedOnly
-            }, sort: [SortDescriptor(\Prospect.name)])
+            }, sort: [sort])
+        } else {
+            _prospects = Query(sort: [sort])
         }
     }
     
@@ -186,6 +188,6 @@ struct ProspectsView: View {
 }
 
 #Preview {
-    ProspectsView(filter: .none)
+    ProspectsView(filter: .none, sort: SortDescriptor(\Prospect.name))
         .modelContainer(for: Prospect.self)
 }
